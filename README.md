@@ -1,6 +1,3 @@
-Here’s a polished **README.md** draft for your project:
-
-````markdown
 # Web-Based Verilog Simulator
 
 This project provides a lightweight web-based interface for simulating Verilog code.  
@@ -15,14 +12,11 @@ The frontend (HTML/JS) provides a simple interface to load Verilog modules and i
 ```bash
 sudo apt update
 sudo apt install iverilog python3-venv python3-pip
-````
+```
 
 ### macOS (Homebrew)
 
-```bash
-brew install icarus-verilog python3
-```
-
+`brew install icarus-verilog python3`
 ### Windows
 
 Download and install Icarus Verilog from:
@@ -36,9 +30,7 @@ Also ensure **Python 3.8+** is installed (from [python.org](https://www.python.o
 
 1. Create a virtual environment named `venv`:
 
-   ```bash
-   python3 -m venv venv
-   ```
+   `python3 -m venv venv`
 
 2. Activate the virtual environment:
 
