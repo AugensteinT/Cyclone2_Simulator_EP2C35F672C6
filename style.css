@@ -38,7 +38,7 @@ main {
 }
 
 .right {
-    width: 600px; /* Fixed width for right column */
+    width: 680px; /* Fixed width for right column */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -46,7 +46,7 @@ main {
 
 textarea {
     width: 100%;
-    height: 95%;
+    height: 90%;
     resize: none;
     font-family: monospace;
     font-size: 14px;
@@ -86,18 +86,25 @@ footer {
 
 /* Seven-segment display container */
 .sevenSegContainer {
-  display: flex;         /* makes children go side by side */
-  gap: 10px;             /* spacing between each HEX display */
-  justify-content: center; /* center horizontally */
-  align-items: center;     /* align vertically */
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+    align-items: flex-start; /* align displays at top */
+}
+
+.sevenSegWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center the label under the display */
 }
 
 #HEX5 {
-  margin-left: 20px; /* 10px normal gap + 10px extra */
+  margin-left: 40px; /* 10px normal gap + 10px extra */
 }
 
 #HEX3 {
-  margin-left: 20px; /* 10px normal gap + 10px extra */
+  margin-left: 40px; /* 10px normal gap + 10px extra */
 }
 
 /* HEX seven-segment displays */
@@ -106,6 +113,7 @@ footer {
     width: 50px;
     height: 90px;
     margin-top: 20px;
+    margin-bottom: 4px;
 }
 
 /* Base style for segments */
@@ -149,15 +157,16 @@ footer {
 .greenLEDContainer {
   display: flex;
   justify-content: flex-start;
-  margin-top: 30px;
+  gap: 15px;        /* spacing between LEDs */
+  margin-top: 35px;
 }
 
 .greenLED {
   width: 20px;
   height: 30px;
-  margin-right: 10px;
-  border-radius: 0px;
+  border-radius: 4px;  /* slight rounding */
   background-color: #222; /* off state */
+  margin-top: 4px;
   transition: background-color 0.2s;
 }
 
@@ -165,43 +174,46 @@ footer {
   background-color: limegreen; /* on state */
 }
 
-/* LEDR segments */
+/* Red LEDs */
 .redLEDContainer {
   display: flex;
+  flex-wrap: wrap;       /* wrap if too many LEDs */
   justify-content: flex-start;
-  margin-top: 30px;
-  flex-wrap: wrap;
+  gap: 15px;             /* spacing between LEDs */
+  margin-top: 35px;
 }
 
 .redLED {
   width: 20px;
   height: 30px;
-  margin-right: 10px;
-  border-radius: 0px;
+  border-radius: 4px;    /* slight rounding */
   background-color: #222; /* off state */
   transition: background-color 0.2s;
+  margin-top: 4px;
 }
 
 .redLED.on {
   background-color: red; /* on state */
 }
 
+
 /* Switches */
 .switchContainer {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 10px;
+  gap: 15px; /* space between switches */
+  margin-top: 5px;
 }
 
 .switch {
   width: 20px;
   height: 40px;
-  margin-right: 10px;
   border: 2px solid #333;
   border-radius: 4px;
   background-color: #222; /* down = off */
   position: relative;
   cursor: pointer;
+  margin-bottom: 5px;
   transition: background-color 0.2s;
 }
 
@@ -210,16 +222,39 @@ footer {
   height: 16px;
   background-color: #eee;
   position: absolute;
-  left: 0px;
-  bottom: 1px;   /* start in "down" position */
+  left: 50%;                 /* center horizontally */
+  transform: translateX(-50%);
+  bottom: 1px;               /* start down */
   border-radius: 2px;
   transition: bottom 0.2s;
 }
 
 .switch.on .switchKnob {
-  bottom: 20px;  /* move up when switch is on */
+  bottom: 20px;              /* move up when on */
 }
 
 .switch.on {
-  background-color: limegreen; /* optional color change for "on" */
+  background-color: limegreen;
+}
+/* Extra Syling */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center switch and label */
+  width: 20px;         /* same width as switch */
+}
+
+.label {
+  margin-top: 0px;
+  font-size: 10px;
+  color: #000;
+  text-align: center;   /* center text */
+  width: max-content;   /* allows text to extend but keeps it centered */
+  position: relative;
+  white-space: nowrap;  /* keeps text on one line */
+}
+
+.label.left {
+  margin-left: 40px;   /* space between label and switch */
 }

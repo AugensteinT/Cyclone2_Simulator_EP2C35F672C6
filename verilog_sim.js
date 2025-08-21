@@ -52,6 +52,8 @@ for (let i = 0; i <= 17; i++) {
             // Update visual
             if (inputs.SW[i]) sw.classList.add('on');
             else sw.classList.remove('on');
+
+            runSimulation();
         });
     }
 }
