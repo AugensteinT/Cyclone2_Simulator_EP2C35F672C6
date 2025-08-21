@@ -16,6 +16,20 @@ let board_outputs = {
   HEX7: Array(7).fill(0),
 };
 
+let bit_order = {
+  SW: {"msb": 17, "lsb": 0},
+  LEDR: {"msb": 17, "lsb": 0}, 
+  LEDG: {"msb": 7, "lsb": 0},
+  HEX0: {"msb": 6, "lsb": 0},
+  HEX1: {"msb": 6, "lsb": 0},
+  HEX2: {"msb": 6, "lsb": 0},
+  HEX3: {"msb": 6, "lsb": 0},
+  HEX4: {"msb": 6, "lsb": 0},
+  HEX5: {"msb": 6, "lsb": 0},
+  HEX6: {"msb": 6, "lsb": 0},
+  HEX7: {"msb": 6, "lsb": 0},
+};
+
 let verilogCode = '';
 
 updateOutputs();
@@ -60,7 +74,6 @@ for (let i = 0; i <= 17; i++) {
 
 // Compile function
 function compileCode() {
-    console.log("Compiling Verilog Logic...");
     const code = document.getElementById("verilogCode").value;
     verilogCode = code;
     const btn = document.getElementById("compileBtn");
@@ -70,7 +83,6 @@ function compileCode() {
 
     btn.textContent = "Compiled"; 
     btn.classList.add("compiled");
-    console.log("Compilation complete!");
 
     runSimulation();
 }
@@ -87,12 +99,16 @@ function preprocessVerilog(code) {
     // Insert newlines after ";" and "endmodule"
     code = code.replace(/;/g, ";\n");                      // after semicolon
     code = code.replace(/\bendmodule\b/g, "endmodule\n");  // after endmodule
+    code = code.replace("\n", ""); 
 
     // Split into lines and remove empty lines
     return code.split("\n").filter(line => line.length > 0);
 }
 
-function extractModules(lines) {
+function extractModules(code) {
+
+    const lines = preprocessVerilog(code);
+
     const modules = [];
     let currentModule = null;
     let insideModule = false;
@@ -103,13 +119,13 @@ function extractModules(lines) {
         // Detect module start
         if (line.startsWith("module")) {
             insideModule = true;
-            currentModule = [line]; // start a new module
+            currentModule = line; // start a new module
             continue;
         }
 
         // If inside a module, collect lines
         if (insideModule) {
-            currentModule.push(line);
+            currentModule += line;
 
             // Detect module end
             if (line.startsWith("endmodule")) {
@@ -123,14 +139,39 @@ function extractModules(lines) {
     return modules; // each element is an array of lines for a module
 }
 
+function updateBitsOrder(verilogStr) {
+    // Initialize bit_order if not already
+    if (typeof bit_order === "undefined") bit_order = {};
+
+    // Regex to match input/output with optional wire/reg, optional [msb:lsb], and variable names
+    const regex = /(input|output)\s*(wire|reg)?\s*(\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*([\w\s,]+)/g;
+
+    let match;
+    while ((match = regex.exec(verilogStr)) !== null) {
+        const msb = match[4] ? parseInt(match[4]) : 0;
+        const lsb = match[5] ? parseInt(match[5]) : 0;
+
+        // Split variable names by comma and remove whitespace
+        const vars = match[6].split(',').map(v => v.trim());
+
+        // Add each variable to the bit_order object
+        vars.forEach(v => {
+            if(v) bit_order[v] = { msb, lsb };
+        });
+    }
+}
+
 async function runSimulation() {
     if (!verilogCode) return;
 
+    topLevelModule = extractModules(verilogCode)[0]; // get the first module
 
+    updateBitsOrder(topLevelModule);
+    
     const packet = {
         code: verilogCode,
         inputs: {
-            SW: bitsToInt(board_inputs.SW), // reverse to match SW[0] = LSB
+            SW: bitsToInt(board_inputs.SW, bit_order.SW.msb, bit_order.SW.lsb), // reverse to match SW[0] = LSB
         }
     };
 
@@ -144,7 +185,6 @@ async function runSimulation() {
         });
 
         const result = await response.json();
-        console.log("Simulation result:", result);
 
         if (result.error_messages) {
             const errorDisplay = document.getElementById("errorDisplay");
@@ -161,17 +201,19 @@ async function runSimulation() {
             }
         }
 
+        console.log("Simulation result:", result.outputs);
+
         // Map outputs back to bit arrays
-        board_outputs.LEDR = intToBits(result.outputs.LEDR || 0, 18);
-        board_outputs.LEDG = intToBits(result.outputs.LEDG || 0, 8);
-        board_outputs.HEX0 = intToBits(result.outputs.HEX0 || 0, 7);
-        board_outputs.HEX1 = intToBits(result.outputs.HEX1 || 0, 7);
-        board_outputs.HEX2 = intToBits(result.outputs.HEX2 || 0, 7);
-        board_outputs.HEX3 = intToBits(result.outputs.HEX3 || 0, 7);
-        board_outputs.HEX4 = intToBits(result.outputs.HEX4 || 0, 7);
-        board_outputs.HEX5 = intToBits(result.outputs.HEX5 || 0, 7);
-        board_outputs.HEX6 = intToBits(result.outputs.HEX6 || 0, 7);
-        board_outputs.HEX7 = intToBits(result.outputs.HEX7 || 0, 7);
+        board_outputs.LEDR = intToBits(result.outputs.LEDR || 0, 18, bit_order.LEDR.msb, bit_order.LEDR.lsb);
+        board_outputs.LEDG = intToBits(result.outputs.LEDG || 0, 8, bit_order.LEDG.msb, bit_order.LEDG.lsb);
+        board_outputs.HEX0 = intToBits(result.outputs.HEX0 || 0, 7, bit_order.HEX0.msb, bit_order.HEX0.lsb);
+        board_outputs.HEX1 = intToBits(result.outputs.HEX1 || 0, 7, bit_order.HEX1.msb, bit_order.HEX1.lsb);
+        board_outputs.HEX2 = intToBits(result.outputs.HEX2 || 0, 7, bit_order.HEX2.msb, bit_order.HEX2.lsb);
+        board_outputs.HEX3 = intToBits(result.outputs.HEX3 || 0, 7, bit_order.HEX3.msb, bit_order.HEX3.lsb);
+        board_outputs.HEX4 = intToBits(result.outputs.HEX4 || 0, 7, bit_order.HEX4.msb, bit_order.HEX4.lsb);
+        board_outputs.HEX5 = intToBits(result.outputs.HEX5 || 0, 7, bit_order.HEX5.msb, bit_order.HEX5.lsb);
+        board_outputs.HEX6 = intToBits(result.outputs.HEX6 || 0, 7, bit_order.HEX6.msb, bit_order.HEX6.lsb);
+        board_outputs.HEX7 = intToBits(result.outputs.HEX7 || 0, 7, bit_order.HEX7.msb, bit_order.HEX7.lsb);
 
         updateOutputs(); // refresh your UI
     } catch (err) {
@@ -179,19 +221,47 @@ async function runSimulation() {
     }
 }
 
-function bitsToInt(bitsArray) {
-    tempBitsArray = bitsArray.slice().reverse(); // reverse to match SW[0] = LSB
-  return parseInt(tempBitsArray.join(''), 2);
+function bitsToInt(bitsArray, msb, lsb) {
+    let tempBitsArray = [];
+    let sliceArray = [];
+    if (msb >= lsb) {
+        tempBitsArray = bitsArray.slice(lsb, msb + 1).reverse(); // reverse to match SW[0] = LSB
+        sliceArray = tempBitsArray.slice(); 
+    } else {
+        tempBitsArray = bitsArray.slice(); // no reverse if msb < lsb
+        sliceArray = tempBitsArray.slice(msb, lsb + 1);
+    }
+    
+    return parseInt(sliceArray.join(''), 2);
 }
 
-function intToBits(value, length) {
-  let bits = [];
-  for (let i = 0; i <= length - 1; i++) {
-    bits[i] = (value >> i) & 1;
-  }
+function intToBits(value, length, msb, lsb) {
+    
+    let bits = [];
+    for (let i = 0; i <= length - 1; i++) {
+        bits[i] = (value >> i) & 1;
+    }
 
-  let tempBitsArray = bits.slice(); // reverse to match SW[0] = LSB
-  return tempBitsArray; //
+    if (msb >= lsb) {
+        if (lsb !== 0) {
+            bits = Array(lsb).fill(0).concat(bits); // fill leading bits with zeros
+        }
+        bits = bits.slice(lsb, msb + 1); // reverse to match SW[0] = LSB
+        if (lsb !== 0) {
+            bits = Array(lsb).fill(0).concat(bits); // fill leading bits with zeros
+        }
+    }
+    else {
+        if (msb !== 0) {
+            bits = Array(msb).fill(0).concat(bits); // fill leading bits with zeros
+        }
+        bits = bits.slice(msb, lsb + 1).reverse();
+        if (msb !== 0) {
+            bits = Array(msb).fill(0).concat(bits); // fill leading bits with zeros
+        }
+    }
+
+    return bits; //
 }
 
 function updateOutputs() {
