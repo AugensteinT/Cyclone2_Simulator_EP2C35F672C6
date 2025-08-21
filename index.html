@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MECHENG 371 Verilog Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="left">University of Auckland</div>
+        <div style="margin-left: auto;">MECHENG 371</div>
+    </header>
+
+    <main>
+        <div class="column left">
+            <button id="compileBtn">Compile</button>
+            <textarea id="verilogCode" placeholder="Paste your Verilog code here"></textarea>
+        </div>
+        <div class="column right">
+            <h2>Cyclone Board</h2>
+
+            <!-- 8 Seven-segment displays -->
+            <div class="sevenSegContainer">
+                <div class="sevenSeg" id="HEX7">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+                <div class="sevenSeg" id="HEX6">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+
+                <div class="sevenSeg" id="HEX5">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+                <div class="sevenSeg" id="HEX4">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+
+                <div class="sevenSeg" id="HEX3">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+                <div class="sevenSeg" id="HEX2">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+                <div class="sevenSeg" id="HEX1">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+                <div class="sevenSeg" id="HEX0">
+                    <div class="segment" id="SEG0"></div>
+                    <div class="segment" id="SEG1"></div>
+                    <div class="segment" id="SEG2"></div>
+                    <div class="segment" id="SEG3"></div>
+                    <div class="segment" id="SEG4"></div>
+                    <div class="segment" id="SEG5"></div>
+                    <div class="segment" id="SEG6"></div>
+                </div>
+            </div>
+
+            <div class="greenLEDContainer">
+                <div class="greenLED" id="LEDG7"></div>
+                <div class="greenLED" id="LEDG6"></div>
+                <div class="greenLED" id="LEDG5"></div>
+                <div class="greenLED" id="LEDG4"></div>
+                <div class="greenLED" id="LEDG3"></div>
+                <div class="greenLED" id="LEDG2"></div>
+                <div class="greenLED" id="LEDG1"></div>
+                <div class="greenLED" id="LEDG0"></div>
+            </div>
+
+            <div class="redLEDContainer">
+                <div class="redLED" id="LEDR17"></div>
+                <div class="redLED" id="LEDR16"></div>
+                <div class="redLED" id="LEDR15"></div>
+                <div class="redLED" id="LEDR14"></div>
+                <div class="redLED" id="LEDR13"></div>
+                <div class="redLED" id="LEDR12"></div>
+                <div class="redLED" id="LEDR11"></div>
+                <div class="redLED" id="LEDR10"></div>
+                <div class="redLED" id="LEDR9"></div>
+                <div class="redLED" id="LEDR8"></div>
+                <div class="redLED" id="LEDR7"></div>
+                <div class="redLED" id="LEDR6"></div>
+                <div class="redLED" id="LEDR5"></div>
+                <div class="redLED" id="LEDR4"></div>
+                <div class="redLED" id="LEDR3"></div>
+                <div class="redLED" id="LEDR2"></div>
+                <div class="redLED" id="LEDR1"></div>
+                <div class="redLED" id="LEDR0"></div>
+            </div>
+
+            <div class="switchContainer">
+                <div class="switch" id="SW17"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW16"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW15"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW14"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW13"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW12"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW11"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW10"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW9"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW8"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW7"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW6"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW5"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW4"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW3"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW2"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW1"><div class="switchKnob"></div></div>
+                <div class="switch" id="SW0"><div class="switchKnob"></div></div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        by Travis Augenstein &copy; 2025
+    </footer>
+
+    <script src="verilog_sim.js"></script>
+</body>
+</html>

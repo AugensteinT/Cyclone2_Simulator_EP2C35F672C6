@@ -1,0 +1,225 @@
+/* Reset some defaults */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #004080;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Main two-column layout */
+main {
+    display: flex;
+    height: calc(100vh - 100px); /* Full height minus header + footer */
+}
+
+.column {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.left {
+    flex: 1;
+}
+
+.right {
+    width: 600px; /* Fixed width for right column */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+textarea {
+    width: 100%;
+    height: 95%;
+    resize: none;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+#compileBtn {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: purple; /* Initial color: not compiled */
+    text-align: center;
+    margin: 10px auto;      
+}
+
+#compileBtn:hover {
+    background-color: #e0e0e0;
+}
+
+#compileBtn.compiled {
+    color: green; /* After compile */
+    border-color: #aa66ff;
+}
+
+/* Footer */
+footer {
+    background-color: #eee;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Seven-segment display container */
+.sevenSegContainer {
+  display: flex;         /* makes children go side by side */
+  gap: 10px;             /* spacing between each HEX display */
+  justify-content: center; /* center horizontally */
+  align-items: center;     /* align vertically */
+}
+
+#HEX5 {
+  margin-left: 20px; /* 10px normal gap + 10px extra */
+}
+
+#HEX3 {
+  margin-left: 20px; /* 10px normal gap + 10px extra */
+}
+
+/* HEX seven-segment displays */
+.sevenSeg {
+    position: relative;
+    width: 50px;
+    height: 90px;
+    margin-top: 20px;
+}
+
+/* Base style for segments */
+.segment {
+    position: absolute;
+    background-color: #222; /* Off state */
+    transition: background-color 0.2s;
+}
+
+/* Horizontal segments with angled ends */
+#SEG0, #SEG3, #SEG6 {
+    width: 40px;
+    height: 10px;
+    left: 5px;
+    clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+}
+
+#SEG0 { top: 0; }
+#SEG6 { top: 40px; }
+#SEG3 { bottom: 0; }
+
+/* Vertical segments with angled ends */
+#SEG1, #SEG2, #SEG4, #SEG5 {
+    width: 10px;
+    height: 40px;
+    clip-path: polygon(0% 10%, 50% 0%, 100% 10%, 100% 90%, 50% 100%, 0% 90%);
+}
+
+#SEG1 { top: 5px; right: 0; }
+#SEG2 { bottom: 5px; right: 0; }
+#SEG5 { top: 5px; left: 0; }
+#SEG4 { bottom: 5px; left: 0; }
+
+/* On state */
+.segment.on {
+    background-color: red;
+    box-shadow: 0 0 10px red;
+}
+
+/* Green LEDs */
+.greenLEDContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 30px;
+}
+
+.greenLED {
+  width: 20px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 0px;
+  background-color: #222; /* off state */
+  transition: background-color 0.2s;
+}
+
+.greenLED.on {
+  background-color: limegreen; /* on state */
+}
+
+/* LEDR segments */
+.redLEDContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.redLED {
+  width: 20px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 0px;
+  background-color: #222; /* off state */
+  transition: background-color 0.2s;
+}
+
+.redLED.on {
+  background-color: red; /* on state */
+}
+
+/* Switches */
+.switchContainer {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.switch {
+  width: 20px;
+  height: 40px;
+  margin-right: 10px;
+  border: 2px solid #333;
+  border-radius: 4px;
+  background-color: #222; /* down = off */
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.switchKnob {
+  width: 16px;
+  height: 16px;
+  background-color: #eee;
+  position: absolute;
+  left: 0px;
+  bottom: 1px;   /* start in "down" position */
+  border-radius: 2px;
+  transition: bottom 0.2s;
+}
+
+.switch.on .switchKnob {
+  bottom: 20px;  /* move up when switch is on */
+}
+
+.switch.on {
+  background-color: limegreen; /* optional color change for "on" */
+}
