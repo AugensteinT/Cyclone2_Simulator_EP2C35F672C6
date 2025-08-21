@@ -104,6 +104,7 @@ footer {
     display: flex;
     gap: 10px;
     background-color: #000000; /* Off state */
+    border-radius: 5px;
     margin-top: 20px;
     justify-content: center;   /* keep content centered */
     align-items: flex-start;   /* align displays at top */
@@ -141,7 +142,7 @@ footer {
 /* Base style for segments */
 .segment {
     position: absolute;
-    background-color: #686868; /* Off state */
+    background-color: #272727; /* Off state */
     transition: background-color 0.2s;
 }
 

@@ -32,8 +32,6 @@ let bit_order = {
 
 let verilogCode = '';
 
-updateOutputs();
-
 const textarea = document.getElementById("verilogCode");
 
 textarea.addEventListener("input", () => {
@@ -71,6 +69,8 @@ for (let i = 0; i <= 17; i++) {
         });
     }
 }
+
+compileCode();
 
 // Compile function
 function compileCode() {
