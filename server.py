@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from collections import defaultdict
 import subprocess
 import tempfile
 import re
@@ -66,44 +67,48 @@ def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
         if not match:
             raise ValueError("Cannot find module name")
         module_name = match.group(1)
-        
-        matches = re.findall(r'\((.*?)\)', verilog_code)
-        
+
+    
+        matches = re.findall(r'\((.*?)\)', verilog_code)    
         identifiers = [x.strip() for x in matches[0].split(",")]
         
+        pattern = r"(module\b.*?endmodule)"
+
+        modules = re.findall(pattern, verilog_code, flags=re.S)
+
         # Build testbench
         tb_code = "module tb;\n"
 
+        inputs_set = set()
         for identifier in identifiers:
             if identifier.startswith("SW"):
-                tb_code += f"    reg [17:0]{identifier};\n"
+                tb_code += f"    reg [8:0] {identifier};\n"
+                inputs_set.add(identifier)
             elif identifier.startswith("LEDR"):
-                tb_code += f"    wire [17:0]{identifier};\n"
+                tb_code += f"    wire [8:0] {identifier};\n"
             elif identifier.startswith("LEDG"):
-                tb_code += f"    wire [7:0]{identifier};\n"    
+                tb_code += f"    wire [8:0] {identifier};\n"
             else:
-                tb_code += f"    wire [6:0]{identifier};\n"    
+                tb_code += f"    wire [6:0] {identifier};\n"
 
-        # Build port connections dynamically
+        # Instantiate
         port_connections = ", ".join([f".{name}({name})" for name in identifiers])
-
-        # Add to testbench
         tb_code += f"    {module_name} uut({port_connections});\n"
 
+        # Stimulus
         tb_code += "    initial begin\n"
         for signal, value in inputs.items():
             tb_code += f"        {signal} = {value};\n"
-        tb_code += "        #1;\n"  # wait 1 time unit
-        
-        # Generate $display lines for all outputs (exclude inputs)
+        tb_code += "        #1;\n"
+
+        # Outputs only
         for name in identifiers:
-            if name not in "SW":
+            if name not in inputs_set:  # exclude inputs
                 tb_code += f'        $display("{name}=%b", {name});\n'
 
-
         tb_code += "        $finish;\n"
-        tb_code += "    end\n"
-        tb_code += "endmodule\n"
+        tb_code += "    end\nendmodule\n"
+
         
         # Save testbench
         with open(tb_file, "w") as f:
@@ -128,9 +133,10 @@ def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
             for line in output_lines:
                 for name in identifiers:
                     if name not in "SW":  # only parse outputs
-                        m = re.match(rf"{name}=(\d+)", line)
+                        m = re.match(rf"{name}=(\w+)", line)  # \w+ matches letters/numbers like z1zz
                         if m:
-                            outputs[name] = int(m.group(1), 2)
+                            bin_str = m.group(1).replace('z', '0')  # replace 'z' with '1'
+                            outputs[name] = int(bin_str, 2)        # convert to integer
             return [outputs, ""]
         except subprocess.CalledProcessError as e:
             error_text = str(e.stderr)  # ensure it's a string
