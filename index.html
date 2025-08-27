@@ -28,15 +28,14 @@ module light (SW, LEDG);
     output [0:0] LEDG;
 
     assign LEDG[0] = (SW[0] & ~SW[1]) | (~SW[0] & SW[1]);
-endmodule
-            </textarea>
+endmodule</textarea>
         </div>
         <div class="column right">
             <h2>Cyclone Board</h2>
 
             <!-- 8 Seven-segment displays -->
             <div class="sevenSegContainer">
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX7">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -46,10 +45,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX7</div>
+                    <div class="label white">HEX7</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX6">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -59,10 +58,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX6</div>
+                    <div class="label white">HEX6</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX5">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -72,10 +71,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label left">HEX5</div>
+                    <div class="label white" style="margin-left: 40px">HEX5</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX4">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -85,10 +84,14 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX4</div>
+                    <div class="label white" style="margin-right: 10px">HEX4</div>
                 </div>
-
-                <div class="sevenSegWrapper">
+                <div class="wrapper highlight-on-hover" style="position: relative; top: 20px;">
+                    <div class="label white">LEDG</div>
+                    <div class="label white" style="color: white;">[8]</div>
+                    <div class="greenLED" id="LEDG8"></div>
+                </div>
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX3">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -98,10 +101,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label left">HEX3</div>
+                    <div class="label white" style="margin-left: 10px">HEX3</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX2">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -111,10 +114,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX2</div>
+                    <div class="label white">HEX2</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX1">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -124,10 +127,10 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX1</div>
+                    <div class="label white">HEX1</div>
                 </div>
 
-                <div class="sevenSegWrapper">
+                <div class="sevenSegWrapper highlight-on-hover">
                     <div class="sevenSeg" id="HEX0">
                         <div class="segment" id="SEG0"></div>
                         <div class="segment" id="SEG1"></div>
@@ -137,7 +140,7 @@ endmodule
                         <div class="segment" id="SEG5"></div>
                         <div class="segment" id="SEG6"></div>
                     </div>
-                    <div class="label">HEX0</div>
+                    <div class="label white">HEX0</div>
                 </div>
             </div>
 

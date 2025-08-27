@@ -126,8 +126,12 @@ footer {
   margin-left: 40px; /* 10px normal gap + 10px extra */
 }
 
+#HEX4 {
+  margin-right: 10px; /* 10px normal gap + 10px extra */
+}
+
 #HEX3 {
-  margin-left: 40px; /* 10px normal gap + 10px extra */
+  margin-left: 10px; /* 10px normal gap + 10px extra */
 }
 
 /* HEX seven-segment displays */
@@ -278,6 +282,20 @@ footer {
   white-space: nowrap;  /* keeps text on one line */
 }
 
+.label.white {
+    color: white;
+}
+
 .label.left {
-  margin-left: 40px;   /* space between label and switch */
+  margin-left: 20px;   /* space between label and switch */
+}
+
+.highlight-on-hover .label {
+    opacity: 0;              /* hidden */
+    transition: opacity 0.1s ease;
+}
+
+/* Show labels when hovered */
+.highlight-on-hover:hover .label {
+    opacity: 1;
 }

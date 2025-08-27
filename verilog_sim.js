@@ -5,7 +5,7 @@ let board_inputs = {
 };
 let board_outputs = {
   LEDR: Array(18).fill(0),  // LEDR[17:0]
-  LEDG: Array(8).fill(0),   // LEDG[7:0]
+  LEDG: Array(9).fill(0),   // LEDG[8:0]
   HEX0: Array(7).fill(0),
   HEX1: Array(7).fill(0),
   HEX2: Array(7).fill(0),
@@ -19,7 +19,7 @@ let board_outputs = {
 let bit_order = {
   SW: {"msb": 17, "lsb": 0},
   LEDR: {"msb": 17, "lsb": 0}, 
-  LEDG: {"msb": 7, "lsb": 0},
+  LEDG: {"msb": 8, "lsb": 0},
   HEX0: {"msb": 6, "lsb": 0},
   HEX1: {"msb": 6, "lsb": 0},
   HEX2: {"msb": 6, "lsb": 0},
@@ -205,7 +205,7 @@ async function runSimulation() {
 
         // Map outputs back to bit arrays
         board_outputs.LEDR = intToBits(result.outputs.LEDR || 0, 18, bit_order.LEDR.msb, bit_order.LEDR.lsb);
-        board_outputs.LEDG = intToBits(result.outputs.LEDG || 0, 8, bit_order.LEDG.msb, bit_order.LEDG.lsb);
+        board_outputs.LEDG = intToBits(result.outputs.LEDG || 0, 9, bit_order.LEDG.msb, bit_order.LEDG.lsb);
         board_outputs.HEX0 = intToBits(result.outputs.HEX0 || 0, 7, bit_order.HEX0.msb, bit_order.HEX0.lsb);
         board_outputs.HEX1 = intToBits(result.outputs.HEX1 || 0, 7, bit_order.HEX1.msb, bit_order.HEX1.lsb);
         board_outputs.HEX2 = intToBits(result.outputs.HEX2 || 0, 7, bit_order.HEX2.msb, bit_order.HEX2.lsb);
@@ -286,8 +286,8 @@ function updateOutputs() {
         }
     }
 
-    // loop through 8 green LEDs LEDG7–LEDG0
-    for (let s = 0; s <= 7; s++) {
+    // loop through 8 green LEDs LEDG8–LEDG0
+    for (let s = 0; s <= 8; s++) {
         const seg = document.getElementById(`LEDG${s}`); // NO '#'
         if (seg) {
             if (board_outputs.LEDG[s] === 1) {
