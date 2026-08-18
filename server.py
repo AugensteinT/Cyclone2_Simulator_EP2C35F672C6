@@ -82,10 +82,10 @@ def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
         inputs_set = set()
         for identifier in identifiers:
             if identifier.startswith("SW"):
-                tb_code += f"    reg [8:0] {identifier};\n"
+                tb_code += f"    reg [17:0] {identifier};\n"
                 inputs_set.add(identifier)
             elif identifier.startswith("LEDR"):
-                tb_code += f"    wire [8:0] {identifier};\n"
+                tb_code += f"    wire [17:0] {identifier};\n"
             elif identifier.startswith("LEDG"):
                 tb_code += f"    wire [8:0] {identifier};\n"
             else:
