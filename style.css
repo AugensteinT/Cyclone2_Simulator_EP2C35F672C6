@@ -299,3 +299,49 @@ footer {
 .highlight-on-hover:hover .label {
     opacity: 1;
 }
+
+
+.code-editor {
+    display: flex;
+    width: 100%;
+    height: 500px;
+    border: 1px solid #ccc;
+    background: #1e1e1e;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.line-numbers {
+    width: 50px;
+    padding: 10px 8px;
+    background: #252526;
+    color: #858585;
+    text-align: right;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    border-right: 1px solid #3e3e42;
+    user-select: none;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    white-space: pre;
+}
+
+#verilogCode {
+    flex: 1;
+    height: 100%;
+    resize: none;
+    border: none;
+    outline: none;
+    padding: 10px;
+    margin: 0;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre;
+    overflow: auto;
+    box-sizing: border-box;
+}

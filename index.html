@@ -22,13 +22,17 @@
                 ⚠️ Please put the top-level module at the top and use MSB:LSB (e.g. 17:0) convention for best results.
             </div>
             <button id="compileBtn">Compile</button>
-            <textarea id="verilogCode" placeholder="Paste your Verilog code here">
-module light (SW, LEDG);
+            <div class="code-editor">
+                <div id="lineNumbers" class="line-numbers">1</div>
+
+                <textarea id="verilogCode" spellcheck="false" placeholder="Paste your Verilog code here">module light (SW, LEDG);
     input [1:0] SW;
     output [0:0] LEDG;
 
     assign LEDG[0] = (SW[0] & ~SW[1]) | (~SW[0] & SW[1]);
-endmodule</textarea>
+endmodule
+                </textarea>
+            </div>
         </div>
         <div class="column right">
             <h2>Cyclone Board</h2>

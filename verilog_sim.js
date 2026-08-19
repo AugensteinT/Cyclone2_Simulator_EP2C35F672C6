@@ -311,3 +311,33 @@ function updateOutputs() {
 
 
 }
+
+const verilogCode2 = document.getElementById("verilogCode");
+const lineNumbers = document.getElementById("lineNumbers");
+
+function updateLineNumbers() {
+    const lineCount = verilogCode2.value.split("\n").length;
+
+    let numbers = "";
+
+    for (let i = 1; i <= lineCount; i++) {
+        numbers += i;
+
+        if (i < lineCount) {
+            numbers += "\n";
+        }
+    }
+
+    lineNumbers.textContent = numbers;
+}
+
+// Update line numbers while typing
+verilogCode2.addEventListener("input", updateLineNumbers);
+
+// Keep line numbers vertically aligned with the code
+verilogCode2.addEventListener("scroll", () => {
+    lineNumbers.scrollTop = verilogCode2.scrollTop;
+});
+
+// Initial line numbers
+updateLineNumbers();
