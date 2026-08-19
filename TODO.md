@@ -1,1 +1,2 @@
-Anaylse History of signal changes
+- Anaylse History of signal changes
+- Add CLOCK signal to board (Set time period in seconds or hold if 0 it is a toggle button to toggle on or off)

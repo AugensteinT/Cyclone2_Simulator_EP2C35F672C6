@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from collections import defaultdict
+
 import subprocess
 import tempfile
 import re
 import uvicorn
-import re
 import os
 
 
@@ -15,11 +14,12 @@ app = FastAPI()
 # Allow all origins (for development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # Or list your frontend URLs like ["http://localhost:3000"]
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],          # GET, POST, etc.
+    allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 verilog_code = """
 module Assignment1Question1(SW, LEDR);
@@ -28,121 +28,353 @@ module Assignment1Question1(SW, LEDR);
     assign LEDR = SW;
 endmodule
 """
-inputs = {"SW": 0}  # SW = 18-bit value, here just 1
+
+inputs = {
+    "SW": 0,
+    "KEY": 0,
+    "CLOCK": 0
+}
 
 
 class SimulationRequest(BaseModel):
     code: str
-    inputs: dict  # e.g., {"SW0": 1, "SW1": 0, ...}
+    inputs: dict
 
-@app.post("/simulate") 
-async def simulate_verilog(request: SimulationRequest): 
+
+@app.post("/simulate")
+async def simulate_verilog(request: SimulationRequest):
     global verilog_code
     global inputs
 
     inputs = request.inputs
     verilog_code = request.code
-    outputs, error_messages = simulate_verilog_with_inputs(verilog_code, inputs)
-    
-    if error_messages != "":
 
-        cleaned_lines = [re.sub(r'^.*/', '', l) for l in error_messages.splitlines()]
+    outputs, error_messages = simulate_verilog_with_inputs(
+        verilog_code,
+        inputs
+    )
+
+    if error_messages != "":
+        cleaned_lines = [
+            re.sub(r'^.*/', '', line)
+            for line in error_messages.splitlines()
+        ]
+
         cleaned_text = "\n".join(cleaned_lines)
 
-        return {"error_messages": cleaned_text}
-    return {"outputs": outputs}
+        return {
+            "error_messages": cleaned_text
+        }
+
+    return {
+        "outputs": outputs
+    }
+
 
 def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
+
     with tempfile.TemporaryDirectory() as tmpdir:
+
         verilog_file = os.path.join(tmpdir, "design.v")
         tb_file = os.path.join(tmpdir, "tb.v")
         output_exe = os.path.join(tmpdir, "sim.out")
-        
-        # Save the Verilog module
+
+        # --------------------------------------------------
+        # Save Verilog module
+        # --------------------------------------------------
+
         with open(verilog_file, "w") as f:
             f.write(verilog_code)
-        
-        # Extract module name
-        match = re.search(r"module\s+(\w+)\s*\(", verilog_code)
-        if not match:
-            raise ValueError("Cannot find module name")
-        module_name = match.group(1)
 
-    
-        matches = re.findall(r'\((.*?)\)', verilog_code)    
-        identifiers = [x.strip() for x in matches[0].split(",")]
-        
-        pattern = r"(module\b.*?endmodule)"
+        # --------------------------------------------------
+        # Extract module name and port list
+        # --------------------------------------------------
 
-        modules = re.findall(pattern, verilog_code, flags=re.S)
+        module_match = re.search(
+            r'\bmodule\s+(\w+)\s*\((.*?)\)\s*;',
+            verilog_code,
+            flags=re.S
+        )
 
+        if not module_match:
+            return [0, "Cannot find top-level module or port list."]
+
+        module_name = module_match.group(1)
+
+        port_text = module_match.group(2)
+
+        identifiers = [
+            port.strip()
+            for port in port_text.split(",")
+            if port.strip()
+        ]
+
+        # --------------------------------------------------
+        # Find actual input/output declarations
+        #
+        # Supports declarations such as:
+        #
+        # input SW;
+        # input [1:0] SW;
+        # output LEDG;
+        # output [17:0] LEDR;
+        # --------------------------------------------------
+
+        port_info = {}
+
+        declaration_pattern = re.compile(
+            r'\b(input|output)\s+'
+            r'(?:\[(\d+)\s*:\s*(\d+)\]\s+)?'
+            r'(\w+)\s*;',
+            flags=re.S
+        )
+
+        for match in declaration_pattern.finditer(verilog_code):
+
+            direction = match.group(1)
+
+            msb = match.group(2)
+            lsb = match.group(3)
+
+            name = match.group(4)
+
+            if msb is not None and lsb is not None:
+
+                width = abs(int(msb) - int(lsb)) + 1
+
+            else:
+
+                width = 1
+
+            port_info[name] = {
+                "direction": direction,
+                "width": width,
+                "msb": msb,
+                "lsb": lsb
+            }
+
+        # --------------------------------------------------
+        # Verify ports
+        # --------------------------------------------------
+
+        missing_ports = [
+            name
+            for name in identifiers
+            if name not in port_info
+        ]
+
+        if missing_ports:
+            return [
+                0,
+                "Could not determine declarations for port(s): "
+                + ", ".join(missing_ports)
+            ]
+
+        # --------------------------------------------------
         # Build testbench
+        # --------------------------------------------------
+
         tb_code = "module tb;\n"
 
         inputs_set = set()
+        outputs_set = set()
+
         for identifier in identifiers:
-            if identifier.startswith("SW"):
-                tb_code += f"    reg [17:0] {identifier};\n"
+
+            info = port_info[identifier]
+
+            direction = info["direction"]
+            width = info["width"]
+
+            # Input
+            if direction == "input":
+
                 inputs_set.add(identifier)
-            elif identifier.startswith("LEDR"):
-                tb_code += f"    wire [17:0] {identifier};\n"
-            elif identifier.startswith("LEDG"):
-                tb_code += f"    wire [8:0] {identifier};\n"
-            else:
-                tb_code += f"    wire [6:0] {identifier};\n"
 
-        # Instantiate
-        port_connections = ", ".join([f".{name}({name})" for name in identifiers])
-        tb_code += f"    {module_name} uut({port_connections});\n"
+                if width == 1:
+                    tb_code += f"    reg {identifier};\n"
+                else:
+                    tb_code += (
+                        f"    reg [{width - 1}:0] "
+                        f"{identifier};\n"
+                    )
 
+            # Output
+            elif direction == "output":
+
+                outputs_set.add(identifier)
+
+                if width == 1:
+                    tb_code += f"    wire {identifier};\n"
+                else:
+                    tb_code += (
+                        f"    wire [{width - 1}:0] "
+                        f"{identifier};\n"
+                    )
+
+        # --------------------------------------------------
+        # Instantiate DUT
+        # --------------------------------------------------
+
+        port_connections = ", ".join(
+            f".{name}({name})"
+            for name in identifiers
+        )
+
+        tb_code += (
+            f"    {module_name} uut"
+            f"({port_connections});\n"
+        )
+
+        # --------------------------------------------------
         # Stimulus
+        # --------------------------------------------------
+
         tb_code += "    initial begin\n"
+
+        # Only assign inputs that actually exist
+        # in the submitted Verilog module.
         for signal, value in inputs.items():
-            tb_code += f"        {signal} = {value};\n"
+
+            if signal not in inputs_set:
+                continue
+
+            # Convert Python values to something
+            # suitable for Verilog.
+            if isinstance(value, list):
+
+                value = "".join(
+                    str(int(bit))
+                    for bit in reversed(value)
+                )
+
+                tb_code += (
+                    f'        {signal} = '
+                    f"{len(value)}'b{value};\n"
+                )
+
+            else:
+
+                tb_code += (
+                    f"        {signal} = {value};\n"
+                )
+
+        # Give combinational logic time to settle
         tb_code += "        #1;\n"
 
-        # Outputs only
-        for name in identifiers:
-            if name not in inputs_set:  # exclude inputs
-                tb_code += f'        $display("{name}=%b", {name});\n'
+        # --------------------------------------------------
+        # Display outputs
+        # --------------------------------------------------
+
+        for name in outputs_set:
+
+            tb_code += (
+                f'        $display("{name}=%b", {name});\n'
+            )
 
         tb_code += "        $finish;\n"
-        tb_code += "    end\nendmodule\n"
+        tb_code += "    end\n"
+        tb_code += "endmodule\n"
 
-        
+        # --------------------------------------------------
         # Save testbench
+        # --------------------------------------------------
+
         with open(tb_file, "w") as f:
             f.write(tb_code)
-        
+
+        # Optional: print generated testbench
+        print("\nGenerated testbench:")
+        print(tb_code)
+
+        # --------------------------------------------------
         # Compile
+        # --------------------------------------------------
+
         try:
-            subprocess.run(["iverilog", "-o", output_exe, verilog_file, tb_file],
-                           check=True, capture_output=True, text=True)
+
+            subprocess.run(
+                [
+                    "iverilog",
+                    "-o",
+                    output_exe,
+                    verilog_file,
+                    tb_file
+                ],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+
         except subprocess.CalledProcessError as e:
-            print(f"Error running simulation: {e}")
-            error_text = str(e.stderr)  # ensure it's a string
-            print(f"Error running simulation: {error_text}")
+
+            error_text = e.stderr or str(e)
+
+            print("Icarus compile error:")
+            print(error_text)
+
             return [0, error_text]
-        
+
+        # --------------------------------------------------
         # Run simulation
+        # --------------------------------------------------
+
         try:
-            result = subprocess.run([output_exe], capture_output=True, text=True, check=True)
+
+            result = subprocess.run(
+                [output_exe],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+
             output_lines = result.stdout.strip().splitlines()
+
             outputs = {}
-            # Parse LEDR from printed line
+
             for line in output_lines:
-                for name in identifiers:
-                    if name not in "SW":  # only parse outputs
-                        m = re.match(rf"{name}=(\w+)", line)  # \w+ matches letters/numbers like z1zz
-                        if m:
-                            bin_str = m.group(1).replace('z', '0')  # replace 'z' with '1'
-                            outputs[name] = int(bin_str, 2)        # convert to integer
+
+                for name in outputs_set:
+
+                    match = re.match(
+                        rf"^{re.escape(name)}=([01xzXZ]+)$",
+                        line
+                    )
+
+                    if match:
+
+                        bin_str = match.group(1).lower()
+
+                        # Convert unknown/high impedance states
+                        # to zero for the frontend.
+                        bin_str = (
+                            bin_str
+                            .replace("x", "0")
+                            .replace("z", "0")
+                        )
+
+                        outputs[name] = int(bin_str, 2)
+
             return [outputs, ""]
+
         except subprocess.CalledProcessError as e:
-            error_text = str(e.stderr)  # ensure it's a string
-            print(f"Error running simulation: {error_text}")
+
+            error_text = e.stderr or str(e)
+
+            print("Simulation error:")
+            print(error_text)
+
             return [0, error_text]
-        
-# Run server from Python
+
+
+# --------------------------------------------------
+# Run server
+# --------------------------------------------------
+
 if __name__ == "__main__":
-    uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(
+        "server:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True
+    )

@@ -1,8 +1,15 @@
 // board_inputs and registers
 
 let board_inputs = {
-  SW: Array(18).fill(0)   // SW[17:0]
+  SW: Array(18).fill(0),   // SW[17:0]
+  KEY: Array(4).fill(0),   // KEY[3:0]
+  CLOCK: Array(1).fill(0)
 };
+
+let board_inputs_array = [
+
+];
+
 let board_outputs = {
   LEDR: Array(18).fill(0),  // LEDR[17:0]
   LEDG: Array(9).fill(0),   // LEDG[8:0]
@@ -18,6 +25,8 @@ let board_outputs = {
 
 let bit_order = {
   SW: {"msb": 17, "lsb": 0},
+  KEY: {"msb": 3, "lsb": 0},
+  CLOCK: {"msb": 0, "lsb": 0},
   LEDR: {"msb": 17, "lsb": 0}, 
   LEDG: {"msb": 8, "lsb": 0},
   HEX0: {"msb": 6, "lsb": 0},
@@ -64,6 +73,26 @@ for (let i = 0; i <= 17; i++) {
             // Update visual
             if (board_inputs.SW[i]) sw.classList.add('on');
             else sw.classList.remove('on');
+
+            board_inputs_array.push({...board_inputs}); // Update the array representation
+
+            runSimulation();
+        });
+    }
+}
+
+for (let i = 0; i <= 3; i++) {
+    const key = document.getElementById(`KEY${i}`);
+    if (key) {
+        key.addEventListener('click', () => {
+            // Toggle switch state: 0 = down/off, 1 = up/on
+            board_inputs.KEY[i] = board_inputs.KEY[i] ? 0 : 1;
+
+            // Update visual
+            if (board_inputs.KEY[i]) key.classList.add('on');
+            else key.classList.remove('on');
+
+            board_inputs_array.push({...board_inputs}); // Update the array representation
 
             runSimulation();
         });
@@ -168,10 +197,13 @@ async function runSimulation() {
 
     updateBitsOrder(topLevelModule);
     
+    // TODO: pass in board_inputs_array since it is sometimes needed for simulation history
     const packet = {
         code: verilogCode,
         inputs: {
             SW: bitsToInt(board_inputs.SW, bit_order.SW.msb, bit_order.SW.lsb), // reverse to match SW[0] = LSB
+            KEY: bitsToInt(board_inputs.KEY, bit_order.KEY.msb, bit_order.KEY.lsb), // reverse to match KEY[0] = LSB
+            CLOCK: bitsToInt(board_inputs.CLOCK, bit_order.CLOCK.msb, bit_order.CLOCK.lsb), // reverse to match CLOCK[0] = LSB
         }
     };
 

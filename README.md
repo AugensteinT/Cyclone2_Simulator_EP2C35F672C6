@@ -4,11 +4,14 @@ This project provides a lightweight web-based interface for simulating Verilog c
 It uses **Icarus Verilog (iverilog)** as the backend simulator and a **FastAPI** server to handle simulation requests.  
 The frontend (HTML/JS) provides a simple interface to load Verilog modules and interact with inputs/outputs visually.
 
+The backend invokes the `iverilog` command-line tool, so Icarus Verilog must be installed separately from the Python dependencies.
+
 ---
 
 ## 🚀 Installation
 
 ### Ubuntu / Debian
+
 ```bash
 sudo apt update
 sudo apt install iverilog python3-venv python3-pip
@@ -16,7 +19,10 @@ sudo apt install iverilog python3-venv python3-pip
 
 ### macOS (Homebrew)
 
-`brew install icarus-verilog python3`
+```bash
+brew install icarus-verilog python3
+```
+
 ### Windows
 
 Download and install Icarus Verilog from:
@@ -45,6 +51,12 @@ Also ensure **Python 3.8+** is installed (from [python.org](https://www.python.o
      .\venv\Scripts\Activate
      ```
 
+   * Windows (Command Prompt):
+
+     ```cmd
+     venv\Scripts\activate
+     ```
+
 3. Install required Python dependencies:
 
    ```bash
@@ -70,7 +82,7 @@ This will launch the server on [http://127.0.0.1:8000](http://127.0.0.1:8000).
 Simply open `index.html` in your browser.
 The frontend connects to the backend server and allows you to:
 
-* Paste or upload Verilog code
+* Paste Verilog code into the editor
 * Run simulations with predefined inputs
 * View outputs mapped to LEDs and 7-seg displays
 
