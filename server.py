@@ -39,7 +39,7 @@ inputs = {
 class SimulationRequest(BaseModel):
     code: str
     inputs: dict
-
+    board_inputs_array: list = []
 
 @app.post("/simulate")
 async def simulate_verilog(request: SimulationRequest):
@@ -48,10 +48,12 @@ async def simulate_verilog(request: SimulationRequest):
 
     inputs = request.inputs
     verilog_code = request.code
+    inputs_history = request.board_inputs_array
 
     outputs, error_messages = simulate_verilog_with_inputs(
         verilog_code,
-        inputs
+        inputs,
+        inputs_history
     )
 
     if error_messages != "":
@@ -71,7 +73,7 @@ async def simulate_verilog(request: SimulationRequest):
     }
 
 
-def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
+def simulate_verilog_with_inputs(verilog_code: str, inputs: dict, inputs_history: list):
 
     with tempfile.TemporaryDirectory() as tmpdir:
 
@@ -232,35 +234,70 @@ def simulate_verilog_with_inputs(verilog_code: str, inputs: dict):
 
         tb_code += "    initial begin\n"
 
-        # Only assign inputs that actually exist
-        # in the submitted Verilog module.
-        for signal, value in inputs.items():
+        # --------------------------------------------------
+        # Apply input history
+        # --------------------------------------------------
 
-            if signal not in inputs_set:
-                continue
+        # Use the input history if it exists.
+        # Each entry represents the board state at a
+        # particular point in time.
+        if inputs_history:
 
-            # Convert Python values to something
-            # suitable for Verilog.
-            if isinstance(value, list):
+            for history_entry in inputs_history:
 
-                value = "".join(
-                    str(int(bit))
-                    for bit in reversed(value)
-                )
+                # The frontend sends:
+                #
+                # {
+                #     "inputs": {
+                #         "SW": ...,
+                #         "KEY": ...,
+                #         "CLOCK": ...
+                #     }
+                # }
+                #
+                history_inputs = history_entry.get("inputs", {})
 
-                tb_code += (
-                    f'        {signal} = '
-                    f"{len(value)}'b{value};\n"
-                )
+                for signal, value in history_inputs.items():
 
-            else:
+                    if signal not in inputs_set:
+                        continue
 
-                tb_code += (
-                    f"        {signal} = {value};\n"
-                )
+                    tb_code += (
+                        f"        {signal} = {value};\n"
+                    )
 
-        # Give combinational logic time to settle
-        tb_code += "        #1;\n"
+                # Advance simulation by 1 ns before
+                # applying the next input state.
+                tb_code += "        #1;\n"
+
+        else:
+
+            # Fall back to the current inputs if no
+            # history was supplied.
+            for signal, value in inputs.items():
+
+                if signal not in inputs_set:
+                    continue
+
+                if isinstance(value, list):
+
+                    value = "".join(
+                        str(int(bit))
+                        for bit in reversed(value)
+                    )
+
+                    tb_code += (
+                        f'        {signal} = '
+                        f"{len(value)}'b{value};\n"
+                    )
+
+                else:
+
+                    tb_code += (
+                        f"        {signal} = {value};\n"
+                    )
+
+            tb_code += "        #1;\n"
 
         # --------------------------------------------------
         # Display outputs

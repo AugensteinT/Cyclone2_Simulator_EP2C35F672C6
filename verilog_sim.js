@@ -63,6 +63,26 @@ document.getElementById("compileBtn").addEventListener("click", () => {
     compileCode();
 });
 
+function getInputState() {
+    return {
+        SW: bitsToInt(
+            board_inputs.SW,
+            bit_order.SW.msb,
+            bit_order.SW.lsb
+        ),
+        KEY: bitsToInt(
+            board_inputs.KEY,
+            bit_order.KEY.msb,
+            bit_order.KEY.lsb
+        ),
+        CLOCK: bitsToInt(
+            board_inputs.CLOCK,
+            bit_order.CLOCK.msb,
+            bit_order.CLOCK.lsb
+        )
+    };
+}
+
 for (let i = 0; i <= 17; i++) {
     const sw = document.getElementById(`SW${i}`);
     if (sw) {
@@ -74,7 +94,9 @@ for (let i = 0; i <= 17; i++) {
             if (board_inputs.SW[i]) sw.classList.add('on');
             else sw.classList.remove('on');
 
-            board_inputs_array.push({...board_inputs}); // Update the array representation
+            board_inputs_array.push({
+                inputs: getInputState()
+            });
 
             runSimulation();
         });
@@ -92,7 +114,9 @@ for (let i = 0; i <= 3; i++) {
             if (board_inputs.KEY[i]) key.classList.add('on');
             else key.classList.remove('on');
 
-            board_inputs_array.push({...board_inputs}); // Update the array representation
+            board_inputs_array.push({
+                inputs: getInputState()
+            });
 
             runSimulation();
         });
@@ -169,23 +193,32 @@ function extractModules(code) {
 }
 
 function updateBitsOrder(verilogStr) {
-    // Initialize bit_order if not already
-    if (typeof bit_order === "undefined") bit_order = {};
 
-    // Regex to match input/output with optional wire/reg, optional [msb:lsb], and variable names
-    const regex = /(input|output)\s*(wire|reg)?\s*(\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*([\w\s,]+)/g;
+    const regex =
+        /\b(input|output)\s+(?:(wire|reg)\s+)?(?:\[(\d+)\s*:\s*(\d+)\]\s+)?([\w\s,]+?)\s*;/g;
 
     let match;
+
     while ((match = regex.exec(verilogStr)) !== null) {
-        const msb = match[4] ? parseInt(match[4]) : 0;
-        const lsb = match[5] ? parseInt(match[5]) : 0;
 
-        // Split variable names by comma and remove whitespace
-        const vars = match[6].split(',').map(v => v.trim());
+        const msb = match[3] !== undefined
+            ? parseInt(match[3])
+            : 0;
 
-        // Add each variable to the bit_order object
+        const lsb = match[4] !== undefined
+            ? parseInt(match[4])
+            : 0;
+
+        const vars = match[5]
+            .split(',')
+            .map(v => v.trim())
+            .filter(v => v.length > 0);
+
         vars.forEach(v => {
-            if(v) bit_order[v] = { msb, lsb };
+            bit_order[v] = {
+                msb: msb,
+                lsb: lsb
+            };
         });
     }
 }
@@ -204,7 +237,8 @@ async function runSimulation() {
             SW: bitsToInt(board_inputs.SW, bit_order.SW.msb, bit_order.SW.lsb), // reverse to match SW[0] = LSB
             KEY: bitsToInt(board_inputs.KEY, bit_order.KEY.msb, bit_order.KEY.lsb), // reverse to match KEY[0] = LSB
             CLOCK: bitsToInt(board_inputs.CLOCK, bit_order.CLOCK.msb, bit_order.CLOCK.lsb), // reverse to match CLOCK[0] = LSB
-        }
+        },
+        board_inputs_array: board_inputs_array,
     };
 
     console.log("Running simulation with inputs:", packet.inputs);
@@ -235,6 +269,7 @@ async function runSimulation() {
 
         console.log("Simulation result:", result.outputs);
 
+        
         // Map outputs back to bit arrays
         board_outputs.LEDR = intToBits(result.outputs.LEDR || 0, 18, bit_order.LEDR.msb, bit_order.LEDR.lsb);
         board_outputs.LEDG = intToBits(result.outputs.LEDG || 0, 9, bit_order.LEDG.msb, bit_order.LEDG.lsb);
