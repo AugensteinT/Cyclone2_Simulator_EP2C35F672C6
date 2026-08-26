@@ -137,6 +137,12 @@ function compileCode() {
     btn.textContent = "Compiled"; 
     btn.classList.add("compiled");
 
+
+    board_inputs_array = [];
+    board_inputs_array.push({
+        inputs: getInputState()
+    });
+
     runSimulation();
 }
 
